@@ -1,42 +1,60 @@
-# p2ppt
+# 📚 p2ppt
 
-一个面向 **“读论文 → 做PPT”** 的 Cursor Skill，目标是：
-
-- 用上游 LLM 做**证据驱动**的论文解析
-- 用下游 LLM 做**精简可讲**的幻灯片生成
-- 对论文图表采用**人工截图占位**，避免模型乱编图像细节
-- 用固定协议与校验规则，降低幻觉和风格跑偏
+> **Evidence-driven Paper → PPT Skill for Cursor**
+>
+> 把“读论文”和“做 PPT”拆成可控流程：
+> 上游负责事实与证据，下游负责精简叙事，人工负责图表截图回填。
 
 ---
 
-## 为什么做这个 Skill
+## ✨ Highlights
 
-常见问题是：
-1. 做 PPT 的模型很强，但拿不到论文图/表的真实语义；
-2. LLM 容易“合理补全”，把猜测写成事实；
-3. 不同模型之间接口松散，导致输出不稳定。
-
-`p2ppt` 的思路是把流程拆开：
-- **Stage A（Reader）**：只做事实提取 + 证据绑定
-- **Stage B（Validator）**：做阻断式校验
-- **Stage C（Builder）**：按风格和页数策略生成逐页内容
-- **Stage D（Human Patch）**：人工插入截图并终审
+- 🧾 **证据优先**：无证据不结论，降低幻觉
+- 🧠 **结构化输出**：统一 `PAPER_TO_PPT_PAYLOAD` 协议
+- 🖼️ **人工图表占位**：强制 `MANUAL_FIGURE_INSERT`，避免编造图像细节
+- 📉 **精简页数策略**：默认 `auto`，按内容密度自适应
+- 🎨 **风格可选**：Academic Clean / Minimal Lite / Tech Dark
+- 🧮 **预算约束**：支持 `info_budget`，超预算自动压缩
 
 ---
 
-## 核心能力
+## 🤔 为什么需要它
 
-- **固定 payload 协议**：统一上游输出结构，字段缺失必须填 `N/A`
-- **硬约束防幻觉**：无证据不结论，不确定项统一 `待人工核验`
-- **图表占位 DSL**：标准化 `MANUAL_FIGURE_INSERT` 标签，便于人工回填
-- **默认自适应页数**：`page_policy=auto`，按内容密度自动映射页数
-- **兼容精简模式**：保留 `auto-compact`（5-8 页）
-- **风格包注入**：Academic Clean / Minimal Lite / Tech Dark
-- **预算控制**：支持 `info_budget`，超预算时自动压缩非核心内容
+传统论文转 PPT 常见问题：
+
+1. 模型看不懂或拿不到论文图/表关键细节；
+2. 模型容易“合理化脑补”，把推测写成事实；
+3. 不同模型串联时接口不稳定，输出风格跑偏。
+
+`p2ppt` 通过 **固定协议 + 校验器 + 占位 DSL**，把流程从“能生成”变成“可审阅、可追溯、可接管”。
 
 ---
 
-## 目录结构
+## 🧩 Workflow
+
+```text
+Stage A: Paper Reader   -> 生成 PAPER_TO_PPT_PAYLOAD
+Stage B: Validator      -> 校验证据/字段/图位
+Stage C: PPT Builder    -> 生成逐页内容（受风格与预算约束）
+Stage D: Human Patch    -> 人工插入图表截图 + 终审
+```
+
+---
+
+## 🛠️ Core Capabilities
+
+| 能力 | 说明 |
+|---|---|
+| Fixed Payload Contract | 统一字段，缺失必须 `N/A` |
+| Anti-Hallucination Rules | claim 必须绑定 evidence |
+| Figure Placeholder DSL | 统一图位占位格式，可直接回填 |
+| Adaptive Page Policy | `auto` 按密度映射 6-14 页 |
+| Compact Compatibility | 保留 `auto-compact`（5-8 页） |
+| Budget-aware Compression | 超过 `info_budget` 自动压缩 |
+
+---
+
+## 📂 Project Structure
 
 ```text
 .
@@ -49,57 +67,49 @@
 
 ---
 
-## 快速开始
+## 🚀 Quick Start
 
 1. 打开 `./.cursor/skills/p2ppt/SKILL.md`
 2. 将论文文本输入上游 Reader，生成 `PAPER_TO_PPT_PAYLOAD`
-3. 运行 Validator，确保通过阻断规则
-4. 选择：
-   - `style_pack`（风格）
+3. 运行 Validator，确保阻断项全部通过
+4. 选择参数：
+   - `style_pack`
    - `page_policy`（默认 `auto`）
-   - `content_density`（light/medium/heavy）
-5. 调用下游 Builder 生成逐页内容
-6. 按 `MANUAL_FIGURE_INSERT` 占位符回填截图，完成终稿
+   - `content_density`（light / medium / heavy）
+5. 调用 Builder 生成逐页内容
+6. 按 `[MANUAL_FIGURE_INSERT]` 占位符回填截图
 
 ---
 
-## 页数策略（当前默认）
+## 📄 Page Policy
 
-- 默认：`auto`（基于内容密度）
-  - light → 6-8 页
-  - medium → 8-10 页
-  - heavy → 11-14 页
-- 兼容：`auto-compact`（5-8 页，旧策略）
-- 固定：`fixed:6` / `fixed:8` / `fixed:12` / `fixed:14`
+- **默认**：`auto`
+  - light → 6–8 页
+  - medium → 8–10 页
+  - heavy → 11–14 页
+- **兼容**：`auto-compact`（5–8 页）
+- **固定**：`fixed:6` / `fixed:8` / `fixed:12` / `fixed:14`
 
 ---
 
-## 适用场景
+## 🎯 Use Cases
 
 - 组会论文汇报
 - 课程论文展示
-- 技术调研汇报
-- 需要“可追溯、低幻觉”材料的学术场景
+- 技术调研分享
+- 需要“可追溯、低幻觉”输出的学术场景
 
 ---
 
-## 注意事项
+## ⚠️ Notes
 
-- 本 Skill 不做自动截图和自动图表重绘
-- 图/表信息以论文原文为准，模型只能输出占位结构
-- 若输入质量较差（缺页、解析错误），输出会自动降级为“草稿版”
-
----
-
-## 版本建议
-
-如果你准备上传 Git：
-- 建议将 `./.cursor/skills/p2ppt/SKILL.md` 作为核心规范
-- `README.md` 作为项目说明入口
-- 后续可加 `examples/` 放 1~2 个真实论文样例（可显著提升可复用性）
+- 本 Skill 不做自动截图与自动重绘图表
+- 图/表信息以论文原文为准，模型仅输出占位结构
+- 输入质量较差时，结果会自动降级为“草稿版”
 
 ---
 
-## License
+## 📜 License
 
-MIT（可按你的项目需要修改）
+MIT
+
