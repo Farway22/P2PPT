@@ -52,24 +52,12 @@ Stage D: Human Patch    -> 人工插入图表截图 + 终审
 | Compact Compatibility | 保留 `auto-compact`（5-8 页） |
 | Budget-aware Compression | 超过 `info_budget` 自动压缩 |
 
----
-
-## 📂 Project Structure
-
-```text
-.
-├── .cursor/
-│   └── skills/
-│       └── p2ppt/
-│           └── SKILL.md
-└── README.md
-```
 
 ---
 
 ## 🚀 Quick Start
 
-1. 打开 `./.cursor/skills/p2ppt/SKILL.md`
+1. 打开 `skills/p2ppt/SKILL.md`
 2. 将论文文本输入上游 Reader，生成 `PAPER_TO_PPT_PAYLOAD`
 3. 运行 Validator，确保阻断项全部通过
 4. 选择参数：
